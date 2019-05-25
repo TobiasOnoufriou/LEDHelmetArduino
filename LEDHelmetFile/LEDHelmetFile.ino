@@ -7,7 +7,7 @@
 int cs = 53;
 File myFile;
 String buffers;
-
+CRGB leds[LEDSize];
 
 typedef struct frame {
   byte red[LEDSize];
@@ -38,9 +38,6 @@ void assignValues(File& myFile, int frameSize) {
           byte r,g,b;
           char* val[1];
           if(sscanf(ptr, "%[^,],%d,%d,%d", val, &r, &g, &b) != 1){
-            /*Serial.println(r);
-            Serial.println(g);
-            Serial.println(b);*/
             Frames[currentFrame].red[incriment] = (byte)r;
             Frames[currentFrame].green[incriment] = (byte)g;
             Frames[currentFrame].blue[incriment] = (byte)b;
@@ -49,9 +46,10 @@ void assignValues(File& myFile, int frameSize) {
             }else{
               Frames[currentFrame].selectedLEDs[incriment] = (byte)0;
             }
-           
+            
           }
-          incriment++;
+         
+          Serial.println(incriment);
           //Serial.println(ptr);
           ptr = strtok(NULL, delim);
           
@@ -76,7 +74,7 @@ void readFrames(File& myFile, int& frameAmount) {
 }
 void setup() {
   char myFileName[] = "NEW.txt";
-
+  FastLED.addLeds<WS2812, 7, GRB>(leds, LEDSize);
   Serial.begin(9600);
   while (!Serial) {
 
@@ -98,7 +96,9 @@ void setup() {
   readFrames(myFile, frameAmount);
   assignValues(myFile, frameAmount);
 }
-void read
+void showLedAnimation(){
+  for(
+}
 void loop() {
   // put your main code here, to run repeatedly:
 
