@@ -1,12 +1,13 @@
 #include <SD.h>
 #include <SPI.h>
-//#include <FastLED.h>
+#include <FastLED.h>
 
 #define LEDSize 100
 
-int cs = 10;
+int cs = 53;
 File myFile;
 String buffers;
+
 
 typedef struct frame {
   byte red[LEDSize];
@@ -16,10 +17,12 @@ typedef struct frame {
   int timeDelay;
 } frame;
 
+
 void assignValues(File& myFile, int frameSize) {
-  int listLength = 1;
-  int currentFrame = -1;
+  byte incriment = 0;
+  byte currentFrame = -1;
   frame Frames[frameSize];
+  //byte incriment = 0;
   char delim[] = "() ";
   while (myFile.available()) {
     buffers = myFile.readStringUntil('\n');
@@ -29,31 +32,26 @@ void assignValues(File& myFile, int frameSize) {
         currentFrame++;
         Serial.println(ptr[i+1]);
         ptr = strtok(NULL, delim);
-        Serial.println(i);
-        incriment = incriment + 1;
+        incriment = 0;
+        
       } else {
-          Serial.println(i);
-          int r,g,b;
-          char val[1];
-          
-          if(sscanf(ptr, "%[^,],%d,%d,%d", &val, &r, &g, &b) != 1){
-         
-            Frames[currentFrame].red[incriment] = r;
-            Frames[currentFrame].green[incriment] = g;
-            Frames[currentFrame].blue[incriment] = b;
+          byte r,g,b;
+          char* val[1];
+          if(sscanf(ptr, "%[^,],%d,%d,%d", val, &r, &g, &b) != 1){
+            /*Serial.println(r);
+            Serial.println(g);
+            Serial.println(b);*/
+            Frames[currentFrame].red[incriment] = (byte)r;
+            Frames[currentFrame].green[incriment] = (byte)g;
+            Frames[currentFrame].blue[incriment] = (byte)b;
             if(val[0] == 't'){
-              Frames[currentFrame].selectedLEDs[incriment] = 1;
+              Frames[currentFrame].selectedLEDs[incriment] = (byte)1;
             }else{
-              Frames[currentFrame].selectedLEDs[incriment] = 0;
+              Frames[currentFrame].selectedLEDs[incriment] = (byte)0;
             }
            
           }
-          
-          Serial.println(Frames[currentFrame].red[incriment]);
-          Serial.println(Frames[currentFrame].green[incriment]);
-          Serial.println(Frames[currentFrame].blue[incriment]);
-          Serial.println(Frames[currentFrame].selectedLEDs[incriment]);
-          
+          incriment++;
           //Serial.println(ptr);
           ptr = strtok(NULL, delim);
           
@@ -61,19 +59,6 @@ void assignValues(File& myFile, int frameSize) {
       }
     }
   }
-
-
-
-
-
-  
-  /*for (int c = 0; c < LEDSize; c++) {
-    if (Frames[0].selectedLEDs[c] == 1) {
-      Serial.println("True");
-    } else {
-      Serial.println("False");
-    }
-  }*/
 
 void readFrames(File& myFile, int& frameAmount) {
   String tempBuffer;
@@ -98,6 +83,7 @@ void setup() {
   }
   Serial.println("Connecting to SD card...");
   pinMode(cs, OUTPUT);
+  digitalWrite(10,HIGH);
   pinMode(SS, OUTPUT);
   if (!SD.begin(cs)) {
     Serial.println("SD did not initalize");
@@ -111,9 +97,8 @@ void setup() {
   int frameAmount;
   readFrames(myFile, frameAmount);
   assignValues(myFile, frameAmount);
-
 }
-
+void read
 void loop() {
   // put your main code here, to run repeatedly:
 
