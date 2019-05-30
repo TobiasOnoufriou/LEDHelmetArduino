@@ -1,12 +1,14 @@
-#include <SD.h>
+ #include <SD.h>
 #include <SPI.h>
 #include <FastLED.h>
 
 #define LEDSize 100
 
-int cs = 53;
+byte cs = 53;
 File myFile;
 String buffers;
+int frameAmount;
+CRGB leds[144];
 
 
 typedef struct frame {
@@ -17,50 +19,66 @@ typedef struct frame {
   int timeDelay;
 } frame;
 
+void showAnimation(frame FrameReal[])
+{
+  for(int cF = 0; cF < frameAmount; cF++){
+    Serial.println(cF);
+    for(int i = 0; i < LEDSize; i++){
+      if(FrameReal[cF].selectedLEDs[i] == 1){
+        Serial.println(i);
+        Serial.println(FrameReal[cF].red[i]);
+        leds[i] = CRGB(FrameReal[cF].red[i],FrameReal[cF].green[i],FrameReal[cF].blue[i]);
+        FastLED.show();
+      }
+      
+    }
+    delay(10000);
+    FastLED.clear();
+  }
+}
 
-void assignValues(File& myFile, int frameSize) {
+void assignValues(File& myFile) {
   byte incriment = 0;
   byte currentFrame = -1;
-  frame Frames[frameSize];
   //byte incriment = 0;
   char delim[] = "() ";
+  frame Frames[frameAmount];
   while (myFile.available()) {
     buffers = myFile.readStringUntil('\n');
     char *ptr = strtok(buffers.c_str(), delim);
     for (int i = 0; ptr[i] != '\0'; i++) {
       if (ptr[i] == '[') {
         currentFrame++;
-        Serial.println(ptr[i+1]);
+        //Serial.println(ptr[i+1]);
         ptr = strtok(NULL, delim);
         incriment = 0;
         
       } else {
-          byte r,g,b;
+          byte r,g,b,selected;
+          int tempTimeDelay;
           char* val[1];
-          if(sscanf(ptr, "%[^,],%d,%d,%d", val, &r, &g, &b) != 1){
-            /*Serial.println(r);
-            Serial.println(g);
-            Serial.println(b);*/
+          //%[^,]
+          if(sscanf(ptr, "%d,%d,%d,%d", &selected, &r, &g, &b) != 1){
+          
             Frames[currentFrame].red[incriment] = (byte)r;
             Frames[currentFrame].green[incriment] = (byte)g;
             Frames[currentFrame].blue[incriment] = (byte)b;
-            if(val[0] == 't'){
-              Frames[currentFrame].selectedLEDs[incriment] = (byte)1;
-            }else{
-              Frames[currentFrame].selectedLEDs[incriment] = (byte)0;
-            }
-           
+            Frames[currentFrame].selectedLEDs[incriment] = (byte)selected; //This is set to true.
+            //Serial.println(Frames[currentFrame].selectedLEDs[incriment]);
+            incriment++;
           }
-          incriment++;
-          //Serial.println(ptr);
+          /*if(sscanf(ptr, "Delay:%d",&tempTimeDelay)){
+            Serial.println(tempTimeDelay);
+          }*/
           ptr = strtok(NULL, delim);
           
         }
       }
     }
+    showAnimation(Frames);
   }
 
-void readFrames(File& myFile, int& frameAmount) {
+void readFrames(File& myFile) {
   String tempBuffer;
   tempBuffer = myFile.readStringUntil('>');
   char delim[] = "<>";
@@ -76,7 +94,7 @@ void readFrames(File& myFile, int& frameAmount) {
 }
 void setup() {
   char myFileName[] = "NEW.txt";
-
+  FastLED.addLeds<WS2812B, 10, RGB>(leds, 144);
   Serial.begin(9600);
   while (!Serial) {
 
@@ -94,12 +112,14 @@ void setup() {
     while (1);
   }
 
-  int frameAmount;
-  readFrames(myFile, frameAmount);
-  assignValues(myFile, frameAmount);
+  
+  readFrames(myFile);
+  assignValues(myFile);
 }
-void read
+
 void loop() {
   // put your main code here, to run repeatedly:
+  //showAnimation();
+  
 
 }
