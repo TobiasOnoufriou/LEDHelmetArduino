@@ -19,21 +19,23 @@ typedef struct frame {
   int timeDelay;
 } frame;
 
-void showAnimation(frame FrameReal[])
+frame Frames[10];
+void showAnimation()
 {
   for(int cF = 0; cF < frameAmount; cF++){
     Serial.println(cF);
     for(int i = 0; i < LEDSize; i++){
-      if(FrameReal[cF].selectedLEDs[i] == 1){
+      if(Frames[cF].selectedLEDs[i] == 1){
         Serial.println(i);
-        Serial.println(FrameReal[cF].red[i]);
-        leds[i] = CRGB(FrameReal[cF].red[i],FrameReal[cF].green[i],FrameReal[cF].blue[i]);
+        Serial.println(Frames[cF].red[i]);
+        leds[i] = CRGB(Frames[cF].red[i],Frames[cF].green[i],Frames[cF].blue[i]);
         FastLED.show();
       }
       
     }
-    delay(10000);
-    FastLED.clear();
+   
+    delay(1500);
+     FastLED.clear();
   }
 }
 
@@ -42,7 +44,7 @@ void assignValues(File& myFile) {
   byte currentFrame = -1;
   //byte incriment = 0;
   char delim[] = "() ";
-  frame Frames[frameAmount];
+  //frame Frames[frameAmount];
   while (myFile.available()) {
     buffers = myFile.readStringUntil('\n');
     char *ptr = strtok(buffers.c_str(), delim);
@@ -75,7 +77,7 @@ void assignValues(File& myFile) {
         }
       }
     }
-    showAnimation(Frames);
+    
   }
 
 void readFrames(File& myFile) {
@@ -93,8 +95,8 @@ void readFrames(File& myFile) {
   }
 }
 void setup() {
-  char myFileName[] = "NEW.txt";
-  FastLED.addLeds<WS2812B, 10, RGB>(leds, 144);
+  char myFileName[] = "NEW2.txt";
+  FastLED.addLeds<WS2812B, 7, GRB>(leds, 144);
   Serial.begin(9600);
   while (!Serial) {
 
@@ -119,7 +121,8 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  //showAnimation();
+  showAnimation();
+
   
 
 }
